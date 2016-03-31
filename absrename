@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#
+# @(#) This is absolute renamer - replaces text in all files & renames files!
+#
+
+#####################################
+# Functions...
+#####################################
+function file_rename {
+	FROM_NAME=$1
+	TO_NAME=$2
+	RESTART=1
+	# Find all files, check the name, if matches generate
+	# new file name & do rename
+	while [[ $RESTART -eq 1 ]]; do
+	RESTART=0
+	for f in `find . | grep -v svn`; do
+
+		if [[ "$f" == "." ]]; then
+			continue;
+		fi
+		file_name=`basename $f`
+		dir_name=`dirname $f`
+		new_file_name=`echo $file_name | perl -p -i -e "s/$FROM_NAME/$TO_NAME/g"`
+
+		full_name="$dir_name/$new_file_name"
+		echo "Old file: [$f] new file [$full_name]"
+
+		if [[ "X$f" != "X$full_name" ]]; then
+			echo "mv $f $full_name"
+			mv $f $full_name
+			RESTART=1
+			break;
+		fi
+	done
+
+	done
+}  
+#####################################
+
+echo "Wellcome to absolute renamer!"
+
+EXPECTED_ARGS=2
+E_BADARGS=65
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: `basename $0` <from_name> <to_name>"
+  exit $E_BADARGS
+fi
+
+FROM_LOW=`echo $1 | tr '[A-Z]' '[a-z]'`
+TO_LOW=`echo $2 | tr '[A-Z]' '[a-z]'`
+
+FROM_FC=`echo $FROM_LOW | sed -r 's/(^|;)(.)/\1\U\2/g'`
+TO_FC=`echo $TO_LOW | sed -r 's/(^|;)(.)/\1\U\2/g'`
+
+FROM_UP=`echo $1 | tr '[a-z]' '[A-Z]'`
+TO_UP=`echo $2 | tr '[a-z]' '[A-Z]'`
+
+echo "$FROM_LOW -> $TO_LOW"
+echo "$FROM_FC -> $TO_FC"
+echo "$FROM_UP -> $TO_UP"
+
+# Repalce text in files
+find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_LOW/$TO_LOW/g" {}
+find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_FC/$TO_FC/g" {}
+find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_UP/$TO_UP/g" {}
+
+file_rename  $FROM_LOW $TO_LOW
+file_rename  $FROM_FC $TO_FC
+file_rename  $FROM_UP $TO_UP
+
