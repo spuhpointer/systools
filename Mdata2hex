@@ -1,0 +1,2 @@
+all:
+	gcc data2hex.c -o data2hex

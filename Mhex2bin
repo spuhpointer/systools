@@ -1,0 +1,2 @@
+all:
+	gcc hex2data.c -o hex2data

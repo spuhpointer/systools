@@ -1,0 +1,2 @@
+all:
+	gcc hex2perl.c -o hex2perl
