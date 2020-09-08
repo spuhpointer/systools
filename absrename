@@ -7,6 +7,7 @@
 #####################################
 # Functions...
 #####################################
+
 function file_rename {
 	FROM_NAME=$1
 	TO_NAME=$2
@@ -50,6 +51,32 @@ then
   exit $E_BADARGS
 fi
 
+export FROM_ORG=$1
+export TO_ORG=$2
+
+#
+# keep the case...
+#
+TO_ORG=`perl -wE'
+	use List::Util qw[min max];
+	sub preserve_case {
+    		my ($old, $new) = @_;
+    		my $mask = uc $old ^ $old;
+    		uc $new | $mask .
+		substr($mask, -1) x (length($new) - length($old))
+	}
+	my $len1=length($ENV{'FROM_ORG'}); 
+	my $len2=length($ENV{'TO_ORG'}); 
+
+	my $xmin=min($len1,$len2);
+	my $from=substr $ENV{'FROM_ORG'}, 0, $xmin;
+	my $to=substr $ENV{'TO_ORG'}, 0, $xmin;
+	my $to_left=substr $ENV{'TO_ORG'}, $xmin;
+        print preserve_case($from, $to).$to_left;
+'`
+
+#echo ">>>>>$TO_ORG"
+
 FROM_LOW=`echo $1 | tr '[A-Z]' '[a-z]'`
 TO_LOW=`echo $2 | tr '[A-Z]' '[a-z]'`
 
@@ -59,15 +86,18 @@ TO_FC=`echo $TO_LOW | sed -r 's/(^|;)(.)/\1\U\2/g'`
 FROM_UP=`echo $1 | tr '[a-z]' '[A-Z]'`
 TO_UP=`echo $2 | tr '[a-z]' '[A-Z]'`
 
+echo "$FROM_ORG -> $TO_ORG"
 echo "$FROM_LOW -> $TO_LOW"
 echo "$FROM_FC -> $TO_FC"
 echo "$FROM_UP -> $TO_UP"
 
 # Repalce text in files
+find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_ORG/$TO_ORG/g" {}
 find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_LOW/$TO_LOW/g" {}
 find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_FC/$TO_FC/g" {}
 find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_UP/$TO_UP/g" {}
 
+file_rename  $FROM_ORG $TO_ORG
 file_rename  $FROM_LOW $TO_LOW
 file_rename  $FROM_FC $TO_FC
 file_rename  $FROM_UP $TO_UP
