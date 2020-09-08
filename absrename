@@ -23,7 +23,7 @@ function file_rename {
 		fi
 		file_name=`basename $f`
 		dir_name=`dirname $f`
-		new_file_name=`echo $file_name | perl -p -i -e "s/$FROM_NAME/$TO_NAME/g"`
+		new_file_name=`echo $file_name | perl -p -e "s/$FROM_NAME/$TO_NAME/g"`
 
 		full_name="$dir_name/$new_file_name"
 		echo "Old file: [$f] new file [$full_name]"
@@ -45,9 +45,9 @@ echo "Wellcome to absolute renamer!"
 EXPECTED_ARGS=2
 E_BADARGS=65
 
-if [ $# -ne $EXPECTED_ARGS ]
+if [ $# -lt $EXPECTED_ARGS ]
 then
-  echo "Usage: `basename $0` <from_name> <to_name>"
+  echo "Usage: `basename $0` <from_name> <to_name> [N - no dest casing]" 
   exit $E_BADARGS
 fi
 
@@ -55,8 +55,12 @@ export FROM_ORG=$1
 export TO_ORG=$2
 
 #
-# keep the case...
+# keep the case..
 #
+if [ $# -eq 3 ] && [ $3=='N' ]; then
+	echo "No dest casing..."
+else
+
 TO_ORG=`perl -wE'
 	use List::Util qw[min max];
 	sub preserve_case {
@@ -75,6 +79,7 @@ TO_ORG=`perl -wE'
         print preserve_case($from, $to).$to_left;
 '`
 
+fi
 #echo ">>>>>$TO_ORG"
 
 FROM_LOW=`echo $1 | tr '[A-Z]' '[a-z]'`

@@ -5,6 +5,32 @@
 # Use random string for this purpose
 #
 
-absrename $1 gsiddgswdymroikufnmc
-absrename gsiddgswdymroikufnmc $2
+
+export FROM_ORG=$1
+export TO_ORG=aynfkxarczcoluedbckswlqubmuswaynfkxarczcoluedbckswlqubmusw
+
+TO_ORG=`perl -wE'
+        use List::Util qw[min max];
+        sub preserve_case {
+                my ($old, $new) = @_;
+                my $mask = uc $old ^ $old;
+                uc $new | $mask .
+                substr($mask, -1) x (length($new) - length($old))
+        }
+        my $len1=length($ENV{'FROM_ORG'}); 
+        my $len2=length($ENV{'TO_ORG'}); 
+
+        my $xmin=min($len1,$len2);
+        my $from=substr $ENV{'FROM_ORG'}, 0, $xmin;
+        my $to=substr $ENV{'TO_ORG'}, 0, $xmin;
+        my $to_left=substr $ENV{'TO_ORG'}, $xmin;
+        print preserve_case($from, $to).$to_left;
+'`
+
+absrename $1 $TO_ORG
+
+#
+# in dest mode, we do not neet keep the casing...
+#
+absrename $TO_ORG $2 N
 
