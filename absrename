@@ -62,21 +62,37 @@ if [ $# -eq 3 ] && [ $3=='N' ]; then
 else
 
 TO_ORG=`perl -wE'
-	use List::Util qw[min max];
-	sub preserve_case {
+	sub preserve_case
+	{
+		my $str="";
     		my ($old, $new) = @_;
-    		my $mask = uc $old ^ $old;
-    		uc $new | $mask .
-		substr($mask, -1) x (length($new) - length($old))
-	}
-	my $len1=length($ENV{'FROM_ORG'}); 
-	my $len2=length($ENV{'TO_ORG'}); 
+		my $len2 = length($old);
+		
+		for my $i (0..length($new)-1)
+		{
+			my $j = $i;
 
-	my $xmin=min($len1,$len2);
-	my $from=substr $ENV{'FROM_ORG'}, 0, $xmin;
-	my $to=substr $ENV{'TO_ORG'}, 0, $xmin;
-	my $to_left=substr $ENV{'TO_ORG'}, $xmin;
-        print preserve_case($from, $to).$to_left;
+			if ($j >= $len2)
+			{
+				$j= $len2-1;
+			}
+			my $oldc = substr($old, $j, 1);
+    			my $char = substr($new, $i, 1);
+
+			if ($oldc =~ m/[A-Z]+/)
+			{
+				$char = uc($char);
+			}
+			else
+			{
+				$char = lc($char);
+			}
+
+			$str=$str.$char;
+		}
+		return $str;
+	}
+        print preserve_case($ENV{'FROM_ORG'}, $ENV{'TO_ORG'});
 '`
 
 fi
