@@ -1,8 +1,16 @@
-#!/bin/bash
+:
 
 #
 # @(#) This is absolute renamer - replaces text in all files & renames files!
 #
+
+echo "Wellcome to absolute renamer!"
+
+# Check if Bash version is 4 or above
+if [[ "${BASH_VERSION%%.*}" -lt 4 ]]; then
+    echo "Error: This script requires Bash version 4 or above."
+    exit 1
+fi
 
 #####################################
 # Functions...
@@ -38,9 +46,21 @@ function file_rename {
 
 	done
 }  
-#####################################
 
-echo "Wellcome to absolute renamer!"
+#
+# Rename stuff in the body
+#
+function body_rename {
+	from=$1
+	to=$1
+
+	while IFS= read -r file; do
+    		echo "Renaming file contents: [$file] [$from] -> [$to]"
+    		# Add your processing here, if needed
+    		perl -p -i -e "s/$from/$to/g" $file
+	done < <(find . -type f | grep -v svn | grep -v git)
+}
+#####################################
 
 EXPECTED_ARGS=2
 E_BADARGS=65
@@ -98,25 +118,24 @@ TO_ORG=`perl -wE'
 fi
 #echo ">>>>>$TO_ORG"
 
-FROM_LOW=`echo $1 | tr '[A-Z]' '[a-z]'`
-TO_LOW=`echo $2 | tr '[A-Z]' '[a-z]'`
+FROM_LOW="${1,,}"
+TO_LOW="${2,,}"
 
-FROM_FC=`echo $FROM_LOW | sed -r 's/(^|;)(.)/\1\U\2/g'`
-TO_FC=`echo $TO_LOW | sed -r 's/(^|;)(.)/\1\U\2/g'`
+FROM_FC=${FROM_LOW^}
+TO_FC=${TO_LOW^}
 
-FROM_UP=`echo $1 | tr '[a-z]' '[A-Z]'`
-TO_UP=`echo $2 | tr '[a-z]' '[A-Z]'`
+FROM_UP="${1^^}"
+TO_UP="${2^^}"
 
 echo "$FROM_ORG -> $TO_ORG"
 echo "$FROM_LOW -> $TO_LOW"
 echo "$FROM_FC -> $TO_FC"
 echo "$FROM_UP -> $TO_UP"
 
-# Repalce text in files
-find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_ORG/$TO_ORG/g" {}
-find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_LOW/$TO_LOW/g" {}
-find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_FC/$TO_FC/g" {}
-find . -type f | grep -v svn | grep -v git | xargs -i /usr/bin/perl -p -i -e "s/$FROM_UP/$TO_UP/g" {}
+body_rename  $FROM_ORG $TO_ORG
+body_rename  $FROM_LOW $TO_LOW
+body_rename  $FROM_FC $TO_FC
+body_rename  $FROM_UP $TO_UP
 
 file_rename  $FROM_ORG $TO_ORG
 file_rename  $FROM_LOW $TO_LOW

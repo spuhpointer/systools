@@ -1,4 +1,4 @@
-#!/bin/bash
+:
 
 #
 # @(#) Wrapper for absrename (ensures that  "ab" -> "abab", does not end like abababababababababababababa...)
