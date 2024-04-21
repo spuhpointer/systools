@@ -52,7 +52,7 @@ function file_rename {
 #
 function body_rename {
 	from=$1
-	to=$1
+	to=$2
 
 	while IFS= read -r file; do
     		echo "Renaming file contents: [$file] [$from] -> [$to]"
